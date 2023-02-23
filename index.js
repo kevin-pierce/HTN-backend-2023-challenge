@@ -12,5 +12,5 @@ app.use(express.json())
 app.use('/', getAllRoutes())
 
 app.listen(port, () => {
-  console.log(`Example REST Express app listening at http://localhost:${port}`);
+  console.log(`HTN Backend Server listening at: http://localhost:${port}`);
 });
