@@ -11,10 +11,13 @@ I followed a project architecture I believe was suitable for a small-mid sized b
 - Mock data used during initialization is placed in `/data`
 
 ## Key Features
+I successfully implemented the 5 major endpoints as per the project guidelines. These were:
 
-### /users
-This route is responsible for the 3 core endpoints. Namely
+- GET `/users`
+- GET `/users/:id`
+- PUT `/users/:id`
+- GET `/skills`
+- GET `/skills/?min_frequency=x&max_frequency=y`
 
 
-
-### Author: Kevin Pierce
+#### Author: Kevin Pierce
