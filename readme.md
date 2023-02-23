@@ -1,7 +1,20 @@
-# Hack the North 2021 Backend Boilerplate
+# Hack the North 2023 Backend Submission
 
-This boilerplate contains boilerplate for a REST Express app on Node. The current directory is mounted as a volume under `/src/app` so
-that you do not have to rebuild the image every time (along with `node_modules`). Building and running the image will start the Express server on port
-5000.
+Thanks for taking a look at my submission!
 
-Good luck!
+## Project Structure
+I followed a project architecture I believe was suitable for a small-mid sized backend system. 
+
+- Routes are placed in `/src/routes`
+- Services (route handlers mainly) are placed in `/src/services`
+- Database initialization + large queries are placed in `/src/db`
+- Mock data used during initialization is placed in `/data`
+
+## Key Features
+
+### /users
+This route is responsible for the 3 core endpoints. Namely
+
+
+
+### Author: Kevin Pierce
