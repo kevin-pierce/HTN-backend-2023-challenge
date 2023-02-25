@@ -50,26 +50,22 @@ export const db = new sqlite3.Database('hackers.db', (err) => {
                                 )
                 
                                 hacker.skills.forEach((skill) => {
-                                    // db.serialize(() => {
-
-                                        // Run the query for skill insertion
-                                        db.run(
-                                            skillInsertQuery,
-                                            [skill.skill], 
-                                            function (err) {
-                                                if (err) throw err
-                                                skillID = this.lastID
-                                                
-                                                // Run the query responsible for creating the user:skill mapping
-                                                db.run(
-                                                    userSkillInsertQuery,
-                                                    [hackerID, skillID, skill.rating],
-                                                    (err) => {if (err) throw err }
-                                                )
-                                            }
-                                        )
-                                        
-                                    // })
+                                    // Run the query for skill insertion
+                                    db.run(
+                                        skillInsertQuery,
+                                        [skill.skill], 
+                                        function (err) {
+                                            if (err) throw err
+                                            skillID = this.lastID
+                                            
+                                            // Run the query responsible for creating the user:skill mapping
+                                            db.run(
+                                                userSkillInsertQuery,
+                                                [hackerID, skillID, skill.rating],
+                                                (err) => {if (err) throw err }
+                                            )
+                                        }
+                                    )
                                 })
                             })
                         })

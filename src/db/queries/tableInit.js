@@ -1,3 +1,4 @@
+// Table creation for user table
 export const userTableSchemaCreation = `
     CREATE TABLE user (
         id INTEGER PRIMARY KEY,
@@ -9,12 +10,15 @@ export const userTableSchemaCreation = `
     )
 `
 
+// Table creation for skill table
 export const skillTableSchemaCreation = `
     CREATE TABLE skill (
         id INTEGER PRIMARY KEY,
         name TEXT UNIQUE
     )
 `
+
+// Table creation for userToSkill mapping table
 export const skillToUserTableSchemaCreation = `
     CREATE TABLE user_skills (
         userID INTEGER,

@@ -6,6 +6,8 @@ import {
 
 export const getRegistrationRoutes = () => {
     const router = express.Router()
+
+    // Assign the handlers for each of our endpoints
     router.post('/register/:userID', registerUser)
     router.post('/unregister/:userID', unregisterUser)
     return router
