@@ -1,7 +1,7 @@
 // Query for getting all users + their skills
 export const getAllUserQuery = `
-    SELECT u.id, u.name as userName, u.company, u.phone, u.email, s.name as skillName, us.rating 
-    FROM user as u 
+    SELECT u.id, u.name AS userName, u.company, u.phone, u.email, s.name AS skillName, us.rating 
+    FROM user AS u 
     JOIN user_skills us ON u.id = us.userID
     JOIN skill s ON us.skillID = s.id
 `

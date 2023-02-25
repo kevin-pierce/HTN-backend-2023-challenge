@@ -1,17 +1,18 @@
 export const userTableSchemaCreation = `
     CREATE TABLE user (
         id INTEGER PRIMARY KEY,
-        name text, 
-        company text,
-        email text, 
-        phone text
+        name TEXT, 
+        company TEXT,
+        email TEXT, 
+        phone TEXT,
+        isRegistered INTEGER
     )
 `
 
 export const skillTableSchemaCreation = `
     CREATE TABLE skill (
         id INTEGER PRIMARY KEY,
-        name text UNIQUE
+        name TEXT UNIQUE
     )
 `
 export const skillToUserTableSchemaCreation = `
