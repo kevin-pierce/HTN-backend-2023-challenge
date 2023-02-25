@@ -98,13 +98,13 @@ export const updateUser = async (req, res) => {
 
 // Query for specific user's registration status
 export const getRegistrationStatus = async (req, res) => {
-    db.run(
+    db.get(
         getRegistrationStatusQuery,
         [req.params.userID],
-        (err, rows) => {
+        (err, row) => {
             if (err) throw err
             else {
-                res.send(rows)
+                res.send(row)
             }
         }
     )

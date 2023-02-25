@@ -5,7 +5,7 @@ export const userTableSchemaCreation = `
         company TEXT,
         email TEXT, 
         phone TEXT,
-        isRegistered INTEGER
+        isRegistered INTEGER DEFAULT FALSE
     )
 `
 

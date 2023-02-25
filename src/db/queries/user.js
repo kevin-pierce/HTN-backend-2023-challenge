@@ -23,7 +23,7 @@ export const skillInsertQuery = `
 
 // Query for getting a user's registration status
 export const getRegistrationStatusQuery = `
-    SELECT u.isRegistered 
-    FROM user AS u 
-    WHERE u.id = ?
+    SELECT isRegistered 
+    FROM user  
+    WHERE id = ?
 `

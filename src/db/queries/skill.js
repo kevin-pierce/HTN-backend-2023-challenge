@@ -1,3 +1,4 @@
+// Query to obtain skills that satisfy the frequency constraints
 export const getQuery = `
     SELECT s.name AS name, COUNT(us.skillID) AS frequency 
     FROM user_skills AS us

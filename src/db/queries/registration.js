@@ -1,19 +1,13 @@
-// Query for getting a user's registration status
-export const getRegistrationStatusQuery = `
-    SELECT u.isRegistered 
-    FROM user AS u 
-    WHERE u.id = ?
-`
 // Query for setting a user to REGISTERED
 export const registerUserQuery = `
     UPDATE user
-    SET isRegistered = 1
+    SET isRegistered = TRUE
     WHERE id = ?
 `
 
 // Query for unregistering a user
 export const unregisterUserQuery = `
     UPDATE user
-    SET isRegistered = 0
+    SET isRegistered = FALSE
     WHERE id = ?
 `
