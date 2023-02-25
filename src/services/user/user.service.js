@@ -3,7 +3,7 @@ import {
     getSingleUserQuery, 
     getAllUserQuery,
     userSkillUpdateQuery,
-    skillInsertQuery 
+    getRegistrationStatusQuery,
 } from "../../db/queries/user.js";
 import { 
     formatUserRes,
@@ -94,4 +94,18 @@ export const updateUser = async (req, res) => {
             }
         )
     })
+}
+
+// Query for specific user's registration status
+export const getRegistrationStatus = async (req, res) => {
+    db.run(
+        getRegistrationStatusQuery,
+        [req.params.userID],
+        (err, rows) => {
+            if (err) throw err
+            else {
+                res.send(rows)
+            }
+        }
+    )
 }

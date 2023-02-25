@@ -20,3 +20,10 @@ export const skillInsertQuery = `
     INSERT INTO skill (name) VALUES (?)
     ON CONFLICT (name) DO NOTHING                             
 `
+
+// Query for getting a user's registration status
+export const getRegistrationStatusQuery = `
+    SELECT u.isRegistered 
+    FROM user AS u 
+    WHERE u.id = ?
+`

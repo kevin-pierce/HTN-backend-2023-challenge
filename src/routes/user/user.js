@@ -1,9 +1,9 @@
 import express from 'express'
-
 import { 
     getAllUsers, 
     getUser, 
     updateUser, 
+    getRegistrationStatus
 } from "../../services/user/user.service.js"
 
 export const getUserRoutes = () => {
@@ -13,5 +13,6 @@ export const getUserRoutes = () => {
     router.get('/', getAllUsers)
     router.get('/:userID', getUser)
     router.put('/:userID', updateUser)
+    router.get('/:userID/registration', getRegistrationStatus)
     return router
 }

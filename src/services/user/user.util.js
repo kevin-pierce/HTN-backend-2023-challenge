@@ -75,21 +75,21 @@ export const constructUpdateQuery = (req) => {
     return [userUpdateQuery, updateParams]
 }
 
-// Helper used to construct the partial update query for users
+// Helper used to construct the partial update query for user SKILLS
 export const constructSkillInsertQuery = (req) => {
+    // Formatted list of skill names (can be used directly as parameters for query)
     const skillsToInsert = [...req.body.skills].map((s) => '\'' + s.skill + '\'')
 
-    //  VALUES (?)
-    // ON CONFLICT (name) DO NOTHING         
-
-    let skillInsertQuery = `INSERT INTO skill (name) VALUES `
-    
+    // Hacky way of constructing the query string
+    let skillInsertQuery = `INSERT INTO skill (name) VALUES `  
     skillsToInsert.forEach((skill, i) => {
         skillInsertQuery += `(${skill})`
         if (i < skillsToInsert.length - 1) {
             skillInsertQuery += `, `
         }
     })
+
+    // To ensure we don't insert duplicates
     skillInsertQuery += ` ON CONFLICT (name) DO NOTHING `
 
     return [skillInsertQuery, skillsToInsert]
