@@ -6,7 +6,7 @@ import {
     updateUser, 
 } from "../../services/user/user.service.js"
 
-const getUserRoutes = () => {
+export const getUserRoutes = () => {
     const router = express.Router()
 
     // Assign the handlers for each of our endpoints
@@ -15,5 +15,3 @@ const getUserRoutes = () => {
     router.put('/:userID', updateUser)
     return router
 }
-
-export { getUserRoutes }

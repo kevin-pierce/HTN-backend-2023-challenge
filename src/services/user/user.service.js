@@ -13,7 +13,7 @@ import {
 } from "./user.util.js";
 
 // Query for ALL users
-const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
     db.all(
         getAllUserQuery,
         [],
@@ -27,7 +27,7 @@ const getAllUsers = async (req, res) => {
 }
 
 // Query for specific user
-const getUser = async (req, res) => {
+export const getUser = async (req, res) => {
     db.all(
         getSingleUserQuery,
         [req.params.userID],
@@ -41,7 +41,7 @@ const getUser = async (req, res) => {
 }
 
 // Partial-update for specific users
-const updateUser = async (req, res) => {
+export const updateUser = async (req, res) => {
     const [userUpdateQuery, userUpdateParams] = constructUpdateQuery(req)
     const [skillInsertQuery, skillParams] = constructSkillInsertQuery(req)
 
@@ -94,10 +94,4 @@ const updateUser = async (req, res) => {
             }
         )
     })
-}
-
-export {  
-    getAllUsers,
-    getUser,
-    updateUser
 }
