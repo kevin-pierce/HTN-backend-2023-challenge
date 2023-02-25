@@ -77,6 +77,10 @@ export const constructUpdateQuery = (req) => {
 
 // Helper used to construct the partial update query for user SKILLS
 export const constructSkillInsertQuery = (req) => {
+    // Early return if we don't need to format skills
+    if (!req.body.skills) {
+        return ["", []]
+    }
     // Formatted list of skill names (can be used directly as parameters for query)
     const skillsToInsert = [...req.body.skills].map((s) => '\'' + s.skill + '\'')
 

@@ -20,7 +20,7 @@ export const getAllUsers = async (req, res) => {
         (err, rows) => {
             if (err) throw err
             else {
-                res.send(formatAllUserRes(rows))
+                res.status(200).send(formatAllUserRes(rows))
             }
         }
     )
@@ -34,7 +34,7 @@ export const getUser = async (req, res) => {
         (err, rows) => {
             if (err) throw err
             else {
-                res.send(formatUserRes(rows))
+                res.status(200).send(formatUserRes(rows))
             }
         }
     )
@@ -45,12 +45,16 @@ export const updateUser = async (req, res) => {
     const [userUpdateQuery, userUpdateParams] = constructUpdateQuery(req)
     const [skillInsertQuery, skillParams] = constructSkillInsertQuery(req)
 
-    const skills = req.body.skills;
+    const skills = req.body.skills ? req.body.skills : []
+    let skillParamsStr
+    let userSkillUpdateQueryStatement
 
-    const skillParamsStr = '(' + skillParams.toString() + ')';
+    if (skills && skills.length > 0) {
+        skillParamsStr = '(' + skillParams.toString() + ')';
 
-    // Since we execute this multiple times, preparing this improves the performance of this query
-    let userSkillUpdateQueryStatement = db.prepare(userSkillUpdateQuery)
+        // Since we execute this multiple times, preparing this improves the performance of this query
+        userSkillUpdateQueryStatement = db.prepare(userSkillUpdateQuery)
+    }
 
     // Serialize to run these sequentially
     db.serialize(() => {
@@ -62,35 +66,39 @@ export const updateUser = async (req, res) => {
                 if (err) throw err
             }
         )
+
         // Insert new skills
-        .run(
-            skillInsertQuery,
-            [],
-            (err) => {
-                if (err) throw err
-            }
-        )
-        .all(
+        if (skills && skills.length > 0) {
+            db.run(
+                skillInsertQuery,
+                [],
+                (err) => {
+                    if (err) throw err
+                }
+            )
+            .all(
+                `SELECT id FROM skill WHERE name IN ${skillParamsStr}`,
+                [],
+                (err, rows) => {
+                    if (err) throw err;
+                    rows.forEach((row, ind) => {
+                        userSkillUpdateQueryStatement.run(
+                            [req.params.userID, row.id, skills[ind].rating, skills[ind].rating],
+                            (err) => { if (err) throw err }
+                        )
+                    })
+                }
+            )
+        }
+        // Final get request to obtain updated user
+        db.all(
             getSingleUserQuery,
             [req.params.userID],
             (err, rows) => {
                 if (err) throw err
                 else {
-                    res.send(formatUserRes(rows))
+                    res.status(200).send(formatUserRes(rows))
                 }
-            }
-        )
-        .all(
-            `SELECT id FROM skill WHERE name IN ${skillParamsStr}`,
-            [],
-            (err, rows) => {
-                if (err) throw err;
-                rows.forEach((row, ind) => {
-                    userSkillUpdateQueryStatement.run(
-                        [req.params.userID, row.id, skills[ind].rating, skills[ind].rating],
-                        (err) => { if (err) throw err }
-                    )
-                })
             }
         )
     })
@@ -104,7 +112,7 @@ export const getRegistrationStatus = async (req, res) => {
         (err, row) => {
             if (err) throw err
             else {
-                res.send(row)
+                res.status(200).send(row)
             }
         }
     )

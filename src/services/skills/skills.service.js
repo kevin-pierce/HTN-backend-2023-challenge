@@ -13,7 +13,7 @@ export const getSkills = async (req, res) => {
         (err, rows) => {
             if (err) throw err
             else {
-                res.send(rows)
+                res.status(200).send(rows)
             }
         }
     )
