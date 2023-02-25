@@ -4,7 +4,7 @@ import {
     userTableSchemaCreation,
     skillTableSchemaCreation,
     skillToUserTableSchemaCreation 
-} from './init.js';
+} from './queries/tableInit.js';
 
 export const db = new sqlite3.Database('hackers.db', (err) => {
     if (err) {
@@ -28,45 +28,51 @@ export const db = new sqlite3.Database('hackers.db', (err) => {
                 (err) => {
                     if (!err) {
                         // Populate users + the skills
-                        let userQuery = `INSERT or IGNORE INTO user (name, company, email, phone) VALUES (?, ?, ?, ?)`
-                        let skillQuery = `INSERT or IGNORE INTO skill (name) VALUES (?)`
-            
-                        let userStatement = db.prepare(userQuery)
-                        let skillStatement = db.prepare(skillQuery)
-            
+                        const userInsertQuery = `INSERT or IGNORE INTO user (name, company, email, phone) VALUES (?, ?, ?, ?)`
+                        const skillInsertQuery = `INSERT or IGNORE INTO skill (name) VALUES (?)`
+                        const userSkillInsertQuery = `INSERT or IGNORE INTO user_skills VALUES (?, ?, ?)`
+
+                        // Iterate over all hackers
                         mockHackers.forEach((hacker) => {
-                            userStatement.run([hacker.name, hacker.company, hacker.email, hacker.phone], (err) => {
-                                if (err) throw err
-                            })
-            
-                            hacker.skills.forEach((skill) => {
-                                skillStatement.run([skill.skill], (err) => {
-                                    if (err) throw err
+                            // Initialize hackerID and skillID to be the DB-assigned IDs of each hacker and skill entered ; used in user:skill map
+                            let hackerID;
+                            let skillID;
+                            db.serialize(() => {
+
+                                // Run query for user insertion
+                                db.run(
+                                    userInsertQuery,
+                                    [hacker.name, hacker.company, hacker.email, hacker.phone], 
+                                    function (err) {
+                                        if (err) throw err
+                                        hackerID = this.lastID
+                                    }
+                                )
+                
+                                hacker.skills.forEach((skill) => {
+                                    // db.serialize(() => {
+
+                                        // Run the query for skill insertion
+                                        db.run(
+                                            skillInsertQuery,
+                                            [skill.skill], 
+                                            function (err) {
+                                                if (err) throw err
+                                                skillID = this.lastID
+                                                
+                                                // Run the query responsible for creating the user:skill mapping
+                                                db.run(
+                                                    userSkillInsertQuery,
+                                                    [hackerID, skillID, skill.rating],
+                                                    (err) => {if (err) throw err }
+                                                )
+                                            }
+                                        )
+                                        
+                                    // })
                                 })
                             })
                         })
-                        userStatement.finalize()
-                        skillStatement.finalize()
-            
-                        let userSkillQuery = `INSERT or IGNORE INTO user_skills VALUES (?, ?, ?)`
-                        let userSkillStatement = db.prepare(userSkillQuery)
-            
-                        // This is a VERY bad assumption ; however, due to time constraints I implemented
-                        // the population logic this way
-                        // Since we cannot access the hacker DB-assigned id without making another query
-                        // We instead iterate over the numbers from 1 -> sizeOfHackersData to populate this field
-                        // We note that this is VERY hacky and not ideal in prod
-                        for (let i = 0 ; i < mockHackers.length; ++i) {
-                            let hacker = mockHackers[i]
-                            let hackerId = i + 1;
-            
-                            hacker.skills.forEach((skill) => {
-                                userSkillStatement.run([hackerId, skill.skill, skill.rating], (err) => {
-                                    if (err) throw err
-                                })
-                            })
-                        }
-                        userSkillStatement.finalize()
                     }
                 }
             )

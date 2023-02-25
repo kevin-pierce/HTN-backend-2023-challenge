@@ -1,42 +1,26 @@
 import { db } from "../../db/index.js";
+import { 
+    getSingleUserQuery, 
+    getAllUserQuery,
+    userSkillUpdateQuery,
+    skillInsertQuery 
+} from "../../db/queries/user.js";
+import { 
+    formatUserRes,
+    formatAllUserRes,
+    constructUpdateQuery,
+    constructSkillInsertQuery
+} from "./user.util.js";
 
 // Query for ALL users
 const getAllUsers = async (req, res) => {
-    const query = `SELECT id, name, company, phone, email, us.skillID, us.rating FROM user 
-                    JOIN user_skills us ON user.id = us.userID`
-
     db.all(
-        query,
+        getAllUserQuery,
         [],
         (err, rows) => {
             if (err) throw err
             else {
-                let formattedRes = new Map();
-                // Process the rows
-                rows.forEach((row) => {
-                    if (!formattedRes.has(row.id)) {
-                        let user = {
-                            name: row.name,
-                            company: row.company,
-                            email: row.email,
-                            phone: row.phone,
-                            skills: [{
-                                skill: row.skillID,
-                                rating: row.rating,
-                            }]
-                        }
-                        formattedRes.set(row.id, user)
-                    }
-                    else {
-                        let user = formattedRes.get(row.id)
-
-                        user.skills.push({
-                            skill: row.skillID,
-                            rating: row.rating
-                        })
-                    }
-                })
-                res.send(Object.values(Object.fromEntries(formattedRes)))
+                res.send(formatAllUserRes(rows))
             }
         }
     )
@@ -44,34 +28,13 @@ const getAllUsers = async (req, res) => {
 
 // Query for specific user
 const getUser = async (req, res) => {
-    const query = `SELECT id, name, company, phone, email, us.skillID, us.rating FROM user 
-                    JOIN user_skills us ON user.id = us.userID
-                    WHERE user.id = ?`
-
     db.all(
-        query,
+        getSingleUserQuery,
         [req.params.userID],
         (err, rows) => {
             if (err) throw err
             else {
-                let skills = []
-
-                // Compress all skils into a single array
-                rows.forEach((row) => {
-                    skills.push({
-                        skill: row.skillID,
-                        rating: row.rating,
-                    })
-                })
-
-                // Return formatted object
-                res.send({
-                    name: rows[0].name,
-                    company: rows[0].company,
-                    phone: rows[0].phone,
-                    email: rows[0].email,
-                    skills: skills
-                })
+                res.send(formatUserRes(rows))
             }
         }
     )
@@ -79,88 +42,56 @@ const getUser = async (req, res) => {
 
 // Partial-update for specific users
 const updateUser = async (req, res) => {
-    // Initialize our query string + params list
-    const getQuery = `SELECT id, name, company, phone, email, us.skillID, us.rating FROM user 
-                      JOIN user_skills us ON user.id = us.userID
-                      WHERE user.id = ?`
+    const [userUpdateQuery, userUpdateParams] = constructUpdateQuery(req)
+    const [skillInsertQuery, skillParams] = constructSkillInsertQuery(req)
 
+    const skills = req.body.skills;
 
-    let userPutQuery = `UPDATE user SET `
-    let params = []
+    const skillParamsStr = '(' + skillParams.toString() + ')';
 
-    // Create a placeholder for each field passed into the query
-    // We update all fields that are NOT skills-related here
-    for (const [field, val] of Object.entries(req.body)) {
-        if (field != 'skills') {
-            userPutQuery += `${field} = ? `
-            params.push(val)
-        }
-    }
-
-    // Add the ID specifier for the user at the end, and add their ID as a param
-    userPutQuery += `WHERE id = ?;`
-    params.push(req.params.userID)
-
-    // Query for updating skills in skill table
-    let skillPutQuery = `INSERT or IGNORE INTO skill (name) VALUES (?)`
-    let skills = [...req.body.skills]
-    let skillsToInsert = skills.map((s) => s.skill)
-
-    // Query + statement for updating the individual skills in the mapped table
-    let userSkillUpdateQuery = `INSERT INTO user_skills (userID, skillID, rating) VALUES (?, ?, ?)
-                                ON CONFLICT (userID, skillID) DO UPDATE SET rating = ?`
-
+    // Since we execute this multiple times, preparing this improves the performance of this query
     let userSkillUpdateQueryStatement = db.prepare(userSkillUpdateQuery)
 
-    // We want these queries to run SEQUENTIALLY, in order
+    // Serialize to run these sequentially
     db.serialize(() => {
+        // Update the user fields EXCEPT skills
         db.run(
-            userPutQuery,
-            params,
+            userUpdateQuery,
+            userUpdateParams,
             (err) => {
                 if (err) throw err
             }
         )
+        // Insert new skills
         .run(
-            skillPutQuery,
-            [skillsToInsert],
+            skillInsertQuery,
+            [],
             (err) => {
                 if (err) throw err
             }
         )
         .all(
-            getQuery,
+            getSingleUserQuery,
             [req.params.userID],
             (err, rows) => {
                 if (err) throw err
                 else {
-                    let skills = []
-    
-                    // Compress all skils into a single array
-                    rows.forEach((row) => {
-                        skills.push({
-                            skill: row.skillID,
-                            rating: row.rating,
-                        })
-                    })
-    
-                    // Return formatted object
-                    res.send({
-                        name: rows[0].name,
-                        company: rows[0].company,
-                        phone: rows[0].phone,
-                        email: rows[0].email,
-                        skills: skills
-                    })
+                    res.send(formatUserRes(rows))
                 }
             }
         )
-    })
-
-    skills.forEach((skill) => {
-        userSkillUpdateQueryStatement.run(
-            [req.params.userID, skill.skill, skill.rating], 
-            (err) => { if (err) throw err }
+        .all(
+            `SELECT id FROM skill WHERE name IN ${skillParamsStr}`,
+            [],
+            (err, rows) => {
+                if (err) throw err;
+                rows.forEach((row, ind) => {
+                    userSkillUpdateQueryStatement.run(
+                        [req.params.userID, row.id, skills[ind].rating, skills[ind].rating],
+                        (err) => { if (err) throw err }
+                    )
+                })
+            }
         )
     })
 }

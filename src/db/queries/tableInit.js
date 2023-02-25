@@ -1,6 +1,6 @@
 export const userTableSchemaCreation = `
     CREATE TABLE user (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         name text, 
         company text,
         email text, 
@@ -10,16 +10,17 @@ export const userTableSchemaCreation = `
 
 export const skillTableSchemaCreation = `
     CREATE TABLE skill (
-        name text PRIMARY KEY
+        id INTEGER PRIMARY KEY,
+        name text UNIQUE
     )
 `
 export const skillToUserTableSchemaCreation = `
     CREATE TABLE user_skills (
         userID INTEGER,
-        skillID text,
+        skillID INTEGER,
         rating INTEGER,
         CONSTRAINT userToSkill PRIMARY KEY (userID, skillID),
         FOREIGN KEY (userID) references user(id),
-        FOREIGN KEY (skillID) references skill(name)
+        FOREIGN KEY (skillID) references skill(id)
     )
 `
